@@ -79,7 +79,7 @@ export function PlayerInput({
         </Label>
         <Textarea
           id="playerList"
-          placeholder="John, Alice, Bob, Sarah..."
+          placeholder="Shiva, Vishnu, Brahma"
           value={playerList}
           onChange={(e) => setPlayerList(e.target.value)}
           className="min-h-[80px] resize-none"
