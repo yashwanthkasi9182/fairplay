@@ -25,16 +25,34 @@ export function PlayerInput({
 }: PlayerInputProps) {
   const [playerName, setPlayerName] = useState('');
   const [playerList, setPlayerList] = useState('');
+  const [inputError, setInputError] = useState('');
 
   const handleAddPlayer = () => {
-    if (playerName.trim()) {
-      onAddPlayer(playerName);
+    const trimmedName = playerName.trim();
+    if (trimmedName) {
+      if (players.some(p => p.name.toLowerCase() === trimmedName.toLowerCase())) {
+        setInputError('This player name is already added');
+        return;
+      }
+      setInputError('');
+      onAddPlayer(trimmedName);
       setPlayerName('');
     }
   };
 
   const handleAddFromList = () => {
     if (playerList.trim()) {
+      const names = playerList.split(',').map(name => name.trim()).filter(name => name);
+      const duplicates = names.filter(name => 
+        players.some(p => p.name.toLowerCase() === name.toLowerCase())
+      );
+      
+      if (duplicates.length > 0) {
+        setInputError(`The following names are already added: ${duplicates.join(', ')}`);
+        return;
+      }
+      
+      setInputError('');
       onAddPlayersFromList(playerList);
       setPlayerList('');
     }
@@ -72,6 +90,9 @@ export function PlayerInput({
             Add
           </Button>
         </div>
+        {inputError && (
+          <p className="text-sm text-red-600 mt-1">{inputError}</p>
+        )}
       </div>
 
       {/* Bulk Input */}
