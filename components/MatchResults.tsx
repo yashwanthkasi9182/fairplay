@@ -55,11 +55,8 @@ export function MatchResults({ matches }: MatchResultsProps) {
       if (match.mode === 'Teams') {
         const teamAPlayers = match.teamA?.filter(p => p.id !== match.doubleSider?.id) || [];
         const teamBPlayers = match.teamB?.filter(p => p.id !== match.doubleSider?.id) || [];
-        
-        const teamASkill = getTeamSkillTotal(match.teamA, match.doubleSider);
-        const teamBSkill = getTeamSkillTotal(match.teamB, match.doubleSider);
 
-        text += `*Team A* (Skill: ${teamASkill})\n`;
+        text += `*Team A*\n`;
         text += teamAPlayers.map(p => `  • ${p.name}`).join('\n') + '\n';
         
         if (match.doubleSider) {
@@ -67,7 +64,7 @@ export function MatchResults({ matches }: MatchResultsProps) {
           text += `  • ${match.doubleSider.name}\n`;
         }
         
-        text += `\n*Team B* (Skill: ${teamBSkill})\n`;
+        text += `\n*Team B*\n`;
         text += teamBPlayers.map(p => `  • ${p.name}`).join('\n') + '\n';
         
         text += `\n🎯 *Toss Winner:* Team ${match.tossWinner}\n`;
