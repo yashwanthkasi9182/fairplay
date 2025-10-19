@@ -13,13 +13,15 @@ interface PlayerInputProps {
   onAddPlayer: (name: string) => void;
   onRemovePlayer: (playerId: string) => void;
   onAddPlayersFromList: (playerList: string) => void;
+  onUpdateSkillLevel: (playerId: string, skillLevel: number) => void;
 }
 
 export function PlayerInput({ 
   players, 
   onAddPlayer, 
   onRemovePlayer, 
-  onAddPlayersFromList 
+  onAddPlayersFromList,
+  onUpdateSkillLevel
 }: PlayerInputProps) {
   const [playerName, setPlayerName] = useState('');
   const [playerList, setPlayerList] = useState('');
@@ -105,16 +107,30 @@ export function PlayerInput({
             {players.map((player) => (
               <div
                 key={player.id}
-                className="flex items-center gap-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-3 py-2 rounded-full border border-blue-200 shadow-sm"
+                className="flex flex-col w-full bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 p-3 rounded-lg border border-blue-200 shadow-sm"
               >
-                <span className="text-sm font-medium">{player.name}</span>
-                <button
-                  onClick={() => onRemovePlayer(player.id)}
-                  className="flex-shrink-0 p-0.5 rounded-full hover:bg-red-200 transition-colors"
-                  aria-label={`Remove ${player.name}`}
-                >
-                  <X className="h-3 w-3 text-red-600" />
-                </button>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">{player.name}</span>
+                  <button
+                    onClick={() => onRemovePlayer(player.id)}
+                    className="flex-shrink-0 p-0.5 rounded-full hover:bg-red-200 transition-colors"
+                    aria-label={`Remove ${player.name}`}
+                  >
+                    <X className="h-3 w-3 text-red-600" />
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs">Skill Level:</span>
+                  <input
+                    type="range"
+                    min="1"
+                    max="10"
+                    value={player.skillLevel}
+                    onChange={(e) => onUpdateSkillLevel(player.id, parseInt(e.target.value))}
+                    className="flex-grow h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <span className="text-xs font-medium w-6">{player.skillLevel}</span>
+                </div>
               </div>
             ))}
           </div>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { PlayerInput } from '@/components/PlayerInput';
 import { MatchResults } from '@/components/MatchResults';
-import { MatchGenerator } from '@/lib/matchGenerator';
+import { AIMatchGenerator } from '@/lib/matchGenerator';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,7 @@ import { AlertTriangle, Users, Zap } from 'lucide-react';
 export interface Player {
   id: string;
   name: string;
+  skillLevel: number;
 }
 
 export interface Match {
@@ -41,7 +42,8 @@ export default function Home() {
     if (name.trim() && !players.some(p => p.name.toLowerCase() === name.toLowerCase())) {
       const newPlayer: Player = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        name: name.trim()
+        name: name.trim(),
+        skillLevel: 5 // Default skill level
       };
       setPlayers([...players, newPlayer]);
     }
@@ -49,6 +51,12 @@ export default function Home() {
 
   const removePlayer = (playerId: string) => {
     setPlayers(players.filter(p => p.id !== playerId));
+  };
+
+  const updateSkillLevel = (playerId: string, skillLevel: number) => {
+    setPlayers(players.map(p => 
+      p.id === playerId ? { ...p, skillLevel } : p
+    ));
   };
 
   const addPlayersFromList = (playerList: string) => {
@@ -59,7 +67,8 @@ export default function Home() {
     
     const newPlayers: Player[] = uniqueNames.map(name => ({
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9) + name,
-      name
+      name,
+      skillLevel: 5 // Default skill level
     }));
     
     setPlayers([...players, ...newPlayers]);
@@ -87,7 +96,7 @@ export default function Home() {
     return null;
   };
 
-  const generateMatches = () => {
+  const generateMatches = async () => {
     const validationError = validateInputs();
     if (validationError) {
       setError(validationError);
@@ -95,9 +104,15 @@ export default function Home() {
     }
     
     setError('');
-    
-    const generator = new MatchGenerator(players, mode, teamSize, doubleSider);
-    const matches = generator.generateMatches(numberOfMatches);
+    const generator = new AIMatchGenerator(
+        players,
+        mode,
+        teamSize, // team size
+        doubleSider, // double sider mode
+        process.env.NEXT_PUBLIC_GROQ_API_KEY
+      );
+
+    const matches = await generator.generateMatches(numberOfMatches);
     setGeneratedMatches(matches);
     
     // Auto-scroll to results after a short delay
@@ -145,6 +160,7 @@ export default function Home() {
               onAddPlayer={addPlayer}
               onRemovePlayer={removePlayer}
               onAddPlayersFromList={addPlayersFromList}
+              onUpdateSkillLevel={updateSkillLevel}
             />
           </div>
 
@@ -180,10 +196,9 @@ export default function Home() {
                     <Input
                       id="teamSize"
                       type="number"
-                      min="1"
                       value={teamSize}
                       onChange={(e) => setTeamSize(parseInt(e.target.value) || 1)}
-                      className="w-full"
+                      className="w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                   </div>
                 )}
@@ -214,11 +229,16 @@ export default function Home() {
                   </Label>
                   <Input
                     id="numberOfMatches"
-                    type="number"
-                    min="1"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    
                     value={numberOfMatches}
-                    onChange={(e) => setNumberOfMatches(parseInt(e.target.value) || 1)}
-                    className="w-full"
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      setNumberOfMatches(parseInt(value) || 1);
+                    }}
+                    className="w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
               </div>
